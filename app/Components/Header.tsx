@@ -7,7 +7,7 @@ export default function Header() {
       className="fixed top-0 w-full bg-black border-b border-neutral-800 z-50"
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="text-2xl font-bold text-neutral-500">Khandra</div>
+        <div className="text-2xl font-bold text-red-500">Khandra</div>
         <div className="flex-1 max-w-xl mx-8">
           <div className="relative">
             <input
@@ -23,11 +23,12 @@ export default function Header() {
             <i className="fa-regular fa-bell text-xl"></i>
           </button>
           <Image
-            src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=123"
+            src="/avatar.svg"
             alt="Profile"
             width={32}
             height={32}
             className="rounded-full cursor-pointer"
+            style={{ width: "auto", height: "auto" }}
           />
         </div>
       </div>
