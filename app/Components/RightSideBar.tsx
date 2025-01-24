@@ -7,7 +7,7 @@ export default function RightSideBar() {
   return (
     <aside
       id="right-sidebar"
-      className="w-[300px] h-[calc(100vh-4rem)] border-l border-neutral-800 bg-black overflow-y-auto"
+      className="w-[400px] h-full border-l border-neutral-800 bg-black overflow-y-auto"
     >
       <div className="p-6">
         <div className="flex items-center gap-4 mb-6">

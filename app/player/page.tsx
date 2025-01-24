@@ -84,7 +84,7 @@ export default function Player() {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className="flex flex-col absolute -left-[10vw] top-1/2 -translate-y-1/2 space-y-4 z-10">
+                <div className="flex flex-col absolute -right-20 top-1/2 -translate-y-1/2 space-y-4 z-10">
                   <button
                     className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm"
                     onClick={handlePrevVideo}
@@ -100,7 +100,7 @@ export default function Player() {
                     <ChevronDownIcon className="w-7 h-7" />
                   </button>
                 </div>
-                <div className="absolute -right-20 bottom-1/3 z-10">
+                <div className="absolute -right-20 bottom-2 z-10">
                   <button className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm">
                     <Volume2Icon className="w-7 h-7" />
                   </button>

@@ -5,7 +5,7 @@ export default function LeftSideBar() {
   return (
     <nav
       id="left-sidebar"
-      className="fixed w-[240px] h-[calc(100vh-4rem)] bg-black border-r border-neutral-800 pt-4"
+      className="fixed w-[300px] h-screen bg-black border-r border-neutral-800 pt-4"
     >
       <div className="px-2 space-y-2">
         <a
