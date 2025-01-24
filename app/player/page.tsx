@@ -19,54 +19,60 @@ const videos = [
 
 export default function Player() {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientY);
-  };
+  // Update current index based on scroll position
+  const handleScroll = () => {
+    if (!containerRef.current) return;
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.touches[0].clientY);
-  };
+    const scrollTop = containerRef.current.scrollTop;
+    const videoHeight = containerRef.current.clientHeight;
+    const index = Math.round(scrollTop / videoHeight);
 
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isSwipeUp = distance > 50;
-    const isSwipeDown = distance < -50;
-
-    if (isSwipeUp && currentVideoIndex < videos.length - 1) {
-      setCurrentVideoIndex((prev) => prev + 1);
-    }
-    if (isSwipeDown && currentVideoIndex > 0) {
-      setCurrentVideoIndex((prev) => prev - 1);
-    }
-
-    setTouchStart(0);
-    setTouchEnd(0);
-  };
-
-  const handleNextVideo = () => {
-    if (currentVideoIndex < videos.length - 1) {
-      setCurrentVideoIndex((prev) => prev + 1);
+    if (index !== currentVideoIndex) {
+      setCurrentVideoIndex(index);
     }
   };
 
-  const handlePrevVideo = () => {
-    if (currentVideoIndex > 0) {
-      setCurrentVideoIndex((prev) => prev - 1);
-    }
-  };
-
+  // Initialize video refs array
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play();
-    }
+    videoRefs.current = videoRefs.current.slice(0, videos.length);
+  }, []);
+
+  // Play current video and pause others
+  useEffect(() => {
+    videoRefs.current.forEach((videoRef, index) => {
+      if (videoRef) {
+        if (index === currentVideoIndex) {
+          videoRef.play();
+        } else {
+          videoRef.pause();
+        }
+      }
+    });
   }, [currentVideoIndex]);
+
+  const togglePlay = () => {
+    if (videoRefs.current[currentVideoIndex]) {
+      if (isPlaying) {
+        videoRefs.current[currentVideoIndex]?.pause();
+      } else {
+        videoRefs.current[currentVideoIndex]?.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    const currentVideo = videoRefs.current[currentVideoIndex];
+    if (currentVideo) {
+      currentVideo.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <div id="root" className="h-screen bg-black">
@@ -77,49 +83,75 @@ export default function Player() {
           className="ml-[240px] flex-1 h-full flex justify-center bg-black"
         >
           <div className="relative h-full w-[calc(100vh*0.7)] max-w-[500px]">
-            <div className="h-full w-full">
-              <div
-                className="relative w-full h-full"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+            <div
+              ref={containerRef}
+              className="h-full w-full overflow-y-scroll snap-y snap-mandatory"
+              onScroll={handleScroll}
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {videos.map((videoSrc, index) => (
+                <div
+                  key={videoSrc}
+                  className="h-full w-full snap-start snap-always relative"
+                >
+                  <div className="w-full h-full" onClick={togglePlay}>
+                    <video
+                      ref={(el) => {
+                        videoRefs.current[index] = el;
+                      }}
+                      className="w-full h-full object-cover"
+                      autoPlay={index === currentVideoIndex}
+                      muted={isMuted}
+                      playsInline
+                      loop
+                    >
+                      <source src={videoSrc} type="video/mp4" />
+                    </video>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col absolute -right-20 top-1/2 -translate-y-1/2 space-y-4 z-10">
+              <button
+                className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm"
+                onClick={() => {
+                  containerRef.current?.scrollTo({
+                    top:
+                      (currentVideoIndex - 1) *
+                      containerRef.current.clientHeight,
+                    behavior: "smooth",
+                  });
+                }}
+                disabled={currentVideoIndex === 0}
               >
-                <div className="flex flex-col absolute -right-20 top-1/2 -translate-y-1/2 space-y-4 z-10">
-                  <button
-                    className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm"
-                    onClick={handlePrevVideo}
-                    disabled={currentVideoIndex === 0}
-                  >
-                    <ChevronUpIcon className="w-7 h-7" />
-                  </button>
-                  <button
-                    className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm"
-                    onClick={handleNextVideo}
-                    disabled={currentVideoIndex === videos.length - 1}
-                  >
-                    <ChevronDownIcon className="w-7 h-7" />
-                  </button>
-                </div>
-                <div className="absolute -right-20 bottom-2 z-10">
-                  <button className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm">
-                    <Volume2Icon className="w-7 h-7" />
-                  </button>
-                </div>
-                <div className="w-full h-full">
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    controls
-                    playsInline
-                    loop
-                  >
-                    <source src={videos[currentVideoIndex]} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              </div>
+                <ChevronUpIcon className="w-7 h-7" />
+              </button>
+              <button
+                className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm"
+                onClick={() => {
+                  containerRef.current?.scrollTo({
+                    top:
+                      (currentVideoIndex + 1) *
+                      containerRef.current.clientHeight,
+                    behavior: "smooth",
+                  });
+                }}
+                disabled={currentVideoIndex === videos.length - 1}
+              >
+                <ChevronDownIcon className="w-7 h-7" />
+              </button>
+            </div>
+            <div className="absolute -right-20 bottom-2 z-10">
+              <button
+                className="p-4 bg-neutral-800/50 rounded-full text-white hover:bg-neutral-700 backdrop-blur-sm"
+                onClick={toggleMute}
+              >
+                <Volume2Icon
+                  className={`w-7 h-7 ${
+                    isMuted ? "opacity-50" : "opacity-100"
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </main>
